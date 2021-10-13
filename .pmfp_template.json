@@ -1,41 +1,29 @@
 {
     "language": "go",
     "env": "gomod",
-    "description": "gin简单api服务的模板,注意使用`swag init`创建docs文件夹",
+    "description": "gin简单api服务的模板,注意使用`swag init --parseDependency --parseInternal`创建docs文件夹",
     "author": "hsz",
     "template_type": "socket",
     "requires": [
-        "github.com/Chronokeeper/anyxml@v0.0.0-20160530174208-54457d8e98c6@//@indirect",
-        "github.com/CloudyKit/fastprinter@v0.0.0-20200109182630-33d98a066a53@//@indirect",
-        "github.com/CloudyKit/jet@v2.1.2+incompatible@//@indirect",
-        "github.com/Golang-Tools/loggerhelper@v0.0.3",
-        "github.com/Golang-Tools/redishelper@v0.0.3",
-        "github.com/Golang-Tools/schema-entry-go@v0.0.4",
-        "github.com/agrison/go-tablib@v0.0.0-20160310143025-4930582c22ee@//@indirect",
-        "github.com/agrison/mxj@v0.0.0-20160310142625-1269f8afb3b4@//@indirect",
-        "github.com/alecthomas/template@v0.0.0-20190718012654-fb15b899a751",
-        "github.com/bndr/gotabulate@v1.1.2@//@indirect",
-        "github.com/clbanning/mxj@v1.8.4@//@indirect",
-        "github.com/fatih/structs@v1.1.0@//@indirect",
+        "github.com/Golang-Tools/jwthelper@v0.0.4-0.20211012072332-17a90505d90b",
+        "github.com/Golang-Tools/loggerhelper@v0.0.4",
+        "github.com/Golang-Tools/redishelper@v0.0.7",
+        "github.com/Golang-Tools/schema-entry-go@v0.0.7",
+        "github.com/Golang-Tools/sqlhelper@v0.0.7",
+        "github.com/alecthomas/jsonschema@v0.0.0-20210920000243-787cd8204a0d",
         "github.com/gin-contrib/cors@v1.3.1",
         "github.com/gin-contrib/sse@v0.1.0",
         "github.com/gin-contrib/static@v0.0.1",
-        "github.com/gin-gonic/gin@v1.7.1",
-        "github.com/go-sql-driver/mysql@v1.6.0@//@indirect",
-        "github.com/json-iterator/go@v1.1.10",
-        "github.com/mattn/go-sqlite3@v1.14.7",
-        "github.com/r3labs/sse/v2@v2.3.3",
+        "github.com/gin-gonic/gin@v1.7.4",
+        "github.com/json-iterator/go@v1.1.12",
         "github.com/satori/go.uuid@v1.2.0",
-        "github.com/stretchr/testify@v1.7.0",
-        "github.com/swaggo/files@v0.0.0-20190704085106-630677cd5c14",
-        "github.com/swaggo/gin-swagger@v1.3.0",
-        "github.com/swaggo/swag@v1.7.0",
-        "github.com/syndtr/goleveldb@v1.0.0@//@indirect",
-        "github.com/tealeg/xlsx@v1.0.5@//@indirect",
+        "github.com/scylladb/go-set@v1.0.2",
+        "github.com/swaggo/files@v0.0.0-20210815190702-a29dd2bc99b2",
+        "github.com/swaggo/gin-swagger@v1.3.1",
+        "github.com/swaggo/swag@v1.7.1",
         "github.com/toorop/gin-logrus@v0.0.0-20210225092905-2c785434f26f",
-        "github.com/xormplus/builder@v0.0.0-20200331055651-240ff40009be@//@indirect",
-        "github.com/xormplus/xorm@v0.0.0-20210512135344-8123d584d5f5",
-        "gopkg.in/flosch/pongo2.v3@v3.0.0-20141028000813-5e81b817a0c4@//@indirect"
+        "github.com/uptrace/bun@v1.0.8",
+        "github.com/xeipuuv/gojsonschema@v1.2.0"
     ],
     "template_keys": {
         "app_name": {
@@ -46,17 +34,9 @@
             "description": "应用名",
             "default": "ping"
         },
-        "apinamespace": {
-            "description": "api命名空间名",
-            "default": "user"
-        },
-        "downloadnamespace": {
-            "description": "下载命名空间名",
-            "default": "table"
-        },
-        "eventnamespace": {
-            "description": "事件命名空间名",
-            "default": "timer"
+        "source": {
+            "description": "资源名",
+            "default": "student"
         },
         "author": {
             "description": "作者",
@@ -72,39 +52,34 @@
         }
     },
     "test": {
-        "source": "cp_go_gin//test",
+        "source": "cp_go_gin//apitest",
         "default_path": "servtest/apitest"
     },
     "components": {
-        "apis_init": {
-            "source": "cp_go_gin@v0.0.1//apis_init",
-            "description": "RESTfulapi的存放位置",
-            "default_path": "apis/apis.go"
+        "auth": {
+            "source": "cp_go_gin//simple_auth",
+            "description": "简易权限验证模块",
+            "default_path": "auth"
         },
-        "apis_simple": {
-            "source": "cp_go_gin@v0.0.1//apis_simple",
-            "description": "RESTfulapi的存放位置",
-            "default_path": "apis/{{ api_name }}.go"
-        },
-        "apis_namespace": {
-            "source": "cp_go_gin@v0.0.1//apis_namespace",
-            "description": "RESTfulapi的存放位置",
-            "default_path": "apis/{{ apinamespace }}namespace"
-        },
-        "main": {
-            "source": "cp_go_gin@v0.0.1//main",
-            "description": "入口函数位置",
-            "default_path": "main.go"
+        "apis": {
+            "source": "cp_go_gin//apis",
+            "description": "RESTfulapi的接口模板",
+            "default_path": "apis"
         },
         "models": {
-            "source": "cp_go_gin@v0.0.1//models",
-            "description": "数据模型存放位置,治理使用xormplus作为orm",
+            "source": "cp_go_gin//models",
+            "description": "数据模型模板",
             "default_path": "models"
         },
         "serv": {
             "source": "serv",
             "description": "服务器存放位置",
             "default_path": "serv"
+        },
+        "main": {
+            "source": "cp_go_gin//main",
+            "description": "入口函数位置",
+            "default_path": "main.go"
         },
         "docker-compose": {
             "source": "cp_dockercompose@v0.0.2//server_standalone",
