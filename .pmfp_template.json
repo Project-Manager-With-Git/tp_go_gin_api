@@ -5,7 +5,7 @@
     "author": "hsz",
     "template_type": "socket",
     "requires": [
-        "github.com/Golang-Tools/jwthelper@v0.0.4-0.20211012072332-17a90505d90b",
+        "github.com/Golang-Tools/jwthelper@v0.0.4",
         "github.com/Golang-Tools/loggerhelper@v0.0.4",
         "github.com/Golang-Tools/redishelper@v0.0.7",
         "github.com/Golang-Tools/schema-entry-go@v0.0.7",
