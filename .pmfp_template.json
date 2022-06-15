@@ -55,7 +55,7 @@
     },
     "components": {
         "auth": {
-            "source": "cp_go_gin//simple_auth",
+            "source": "cp_go_gin//auth",
             "description": "简易权限验证模块",
             "default_path": "auth"
         },
