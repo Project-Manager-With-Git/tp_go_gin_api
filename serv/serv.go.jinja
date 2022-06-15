@@ -307,10 +307,10 @@ func (s *Serv) Main() {
 	if s.Use_Auth {
 		authclose := s.InitAuth()
 		defer authclose()
-		apis.Init(s.app, apis.WithAuthMiddlewareFactory())
+		apis.Init(s.app, apis.WithAppName(s.App_Name), apis.WithAppVersion(s.App_Version), apis.WithAuthMiddlewareFactory())
 	} else {
 		//如果不需要验权
-		apis.Init(s.app)
+		apis.Init(s.app, apis.WithAppName(s.App_Name), apis.WithAppVersion(s.App_Version))
 	}
 
 	// 启动服务
