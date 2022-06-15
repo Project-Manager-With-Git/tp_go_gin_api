@@ -18,7 +18,6 @@ import (
 	_ "{{ app_name }}/docs"
 
 	"github.com/Golang-Tools/optparams"
-	redis "github.com/Golang-Tools/redishelper/v2/redisproxy"
 
 	log "github.com/Golang-Tools/loggerhelper/v2"
 	"github.com/Golang-Tools/sqlhelper/v2/bunproxy"
@@ -31,7 +30,7 @@ import (
 )
 
 type Serv struct {
-	App_Version        string `json:"app_version" jsonschema:"required,title=v,description=应用版本,default=0.0.1"`
+	App_Version        string `json:"app_version" jsonschema:"required,title=v,description=应用版本,default={{ version }}"`
 	App_Name           string `json:"app_name" jsonschema:"required,title=n,description=应用名,default={{ app_name }}"`
 	Log_Level          string `json:"log_level" jsonschema:"required,title=l,description=log等级,enum=TRACE,enum=DEBUG,enum=INFO,enum=WARN,enum=ERROR,default=DEBUG"`
 	Address            string `json:"address" jsonschema:"required,title=a,description=启动地址,default=0.0.0.0:5000"`
@@ -54,6 +53,7 @@ type Serv struct {
 	/**
 	auth模块使用的配置,如果不用auth模块可以注释掉
 	*/
+	Use_Auth                     bool   `json:"use_auth" jsonschema:"required,description=激活使用auth模块"`
 	Auth_Secret                  string `json:"auth_secret" jsonschema:"required,title=s,description=应用秘钥用于auth,default=a_secret"`
 	Auth_DB_URL                  string `json:"auth_db_url" jsonschema:"required,description=数据库连接url,default=sqlite://auth.db"`
 	Auth_DB_Query_Timeout_MS     int    `json:"auth_db_query_timeout_ms" jsonschema:"description=设置访问数据库时的请求超时单位ms"`
@@ -73,8 +73,6 @@ type Serv struct {
 	DB_Max_Idle_Conns       int    `json:"db_max_idle_conns" jsonschema:"description=设置访问数据库时的最大空闲连接,default=3"`
 	DB_Conn_Max_IdleTime_MS int    `json:"db_conn_max_idletime_ms" jsonschema:"description=设置访问数据库时的空闲连接最大过期连接"`
 
-	Redis_URL              string `json:"redis_url" jsonschema:"required,description=redis连接url,default=redis://localhost:6379"`
-	Redis_Query_Timeout_MS int    `json:"redis_query_timeout_ms" jsonschema:"required,description=redis连接url,default=50"`
 	//这里开始设置其他业务配置
 
 	app *gin.Engine `json:"-"`
@@ -210,10 +208,11 @@ func (s *Serv) InitStaticBind() {
 }
 
 //InitModels 初始化业务用的数据模型组件,使用默认代理对象
+//注意先初始化models,再初始化其中使用的proxy
 func (s *Serv) InitModels() func() {
 	//先初始化数据模型模块挂载代理的回调
 	models.Init()
-	// 配置数据库
+	// 配置用到的数据库
 	dbinitopts := []optparams.Option[bunproxy.Options]{
 		bunproxy.WithDiscardUnknownColumns(),
 	}
@@ -239,17 +238,10 @@ func (s *Serv) InitModels() func() {
 		os.Exit(1)
 	}
 	log.Debug("config db ok")
-	redisopts := []optparams.Option[redis.Options]{redis.WithURL(s.Redis_URL)}
-	if s.Redis_Query_Timeout_MS > 0 {
-		redisopts = append(redisopts, redis.WithQueryTimeoutMS(s.Redis_Query_Timeout_MS))
-	}
-
-	redis.Default.Init(redisopts...)
 	//其他配置比如redis,etcd等可以从这里开始
 	log.Debug("init models")
 	return func() {
 		bunproxy.Default.Close()
-		redis.Default.Close()
 	}
 }
 
@@ -281,9 +273,6 @@ func (s *Serv) InitAuth() auth.Close {
 		auth.WithDBURL(s.Auth_DB_URL),
 		auth.WithDBProxyInitOpts(dbinitopts...),
 		//初始化api,download,等绑定url
-		auth.WithApiBinders(
-			apis.InitWithAuthCheck,
-		),
 	)
 	if err != nil {
 		log.Error("auth init error", log.Dict{"error": err.Error()})
@@ -315,10 +304,15 @@ func (s *Serv) Main() {
 	s.InitStaticBind()
 
 	// 如果访问权限做校验的话
-	authclose := s.InitAuth()
-	defer authclose()
-	// 如果访问权限不做校验
-	//apis.Init(s.app)
+	if s.Use_Auth {
+		authclose := s.InitAuth()
+		defer authclose()
+		apis.Init(s.app, apis.WithAuthMiddlewareFactory())
+	} else {
+		//如果不需要验权
+		apis.Init(s.app)
+	}
+
 	// 启动服务
 	s.Runserv()
 }
