@@ -50,22 +50,22 @@
         }
     },
     "test": {
-        "source": "cp_go_gin//apitest",
+        "source": "cp_go_gin@v2.0.0//apitest",
         "default_path": "servtest/apitest"
     },
     "components": {
         "auth": {
-            "source": "cp_go_gin//auth",
+            "source": "cp_go_gin@v2.0.0//auth",
             "description": "简易权限验证模块",
             "default_path": "auth"
         },
         "apis": {
-            "source": "cp_go_gin//apis",
+            "source": "cp_go_gin@v2.0.0//apis",
             "description": "RESTfulapi的接口模板",
             "default_path": "apis"
         },
         "models": {
-            "source": "cp_go_gin//models",
+            "source": "cp_go_gin@v2.0.0//models",
             "description": "数据模型模板",
             "default_path": "models"
         },
@@ -75,7 +75,7 @@
             "default_path": "serv"
         },
         "main": {
-            "source": "cp_go_gin//main",
+            "source": "cp_go_gin@v2.0.0//main",
             "description": "入口函数位置",
             "default_path": "main.go"
         },
